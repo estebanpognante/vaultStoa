@@ -219,32 +219,32 @@ const Dashboard = () => {
                 </div>
 
                 {/* Tab Navigation */}
-                <div className="mb-6 border-b border-slate-200">
-                    <nav className="-mb-px flex space-x-8" aria-label="Tabs">
+                <div className="mb-6 border-b border-slate-200 overflow-x-auto no-scrollbar">
+                    <nav className="-mb-px flex space-x-8 px-1" aria-label="Tabs">
                         <button
                             onClick={() => setActiveTab('vault')}
-                            className={`${activeTab === 'vault' ? 'border-blue-500 text-blue-600' : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'} whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center`}
+                            className={`${activeTab === 'vault' ? 'border-blue-500 text-blue-600' : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'} whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center shrink-0`}
                         >
                             <Shield className="w-4 h-4 mr-2" />
                             Bóveda
                         </button>
                         <button
                             onClick={() => setActiveTab('staff')}
-                            className={`${activeTab === 'staff' ? 'border-green-500 text-green-600' : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'} whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center`}
+                            className={`${activeTab === 'staff' ? 'border-green-500 text-green-600' : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'} whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center shrink-0`}
                         >
                             <Users className="w-4 h-4 mr-2" />
                             Personal
                         </button>
                         <button
                             onClick={() => setActiveTab('devices')}
-                            className={`${activeTab === 'devices' ? 'border-purple-500 text-purple-600' : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'} whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center`}
+                            className={`${activeTab === 'devices' ? 'border-purple-500 text-purple-600' : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'} whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center shrink-0`}
                         >
                             <Monitor className="w-4 h-4 mr-2" />
                             Inventario
                         </button>
                         <button
                             onClick={() => setActiveTab('events')}
-                            className={`${activeTab === 'events' ? 'border-orange-500 text-orange-600' : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'} whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center`}
+                            className={`${activeTab === 'events' ? 'border-orange-500 text-orange-600' : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'} whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center shrink-0`}
                         >
                             <Activity className="w-4 h-4 mr-2" />
                             Eventos / Logs
