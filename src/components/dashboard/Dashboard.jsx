@@ -122,13 +122,13 @@ const Dashboard = () => {
             </header>
 
             {/* Main Content */}
-            <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 overflow-x-hidden">
 
                 {/* Controls: Company Selector & Search */}
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+                <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-8">
 
-                    {/* Company Selector */}
-                    <div className="flex items-center gap-2 min-w-[200px]">
+                    {/* Company Selector & Add Button */}
+                    <div className="flex items-center gap-2 min-w-full lg:min-w-[200px]">
                         <div className="relative flex-1">
                             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                 <Building className="h-4 w-4 text-slate-400" />
@@ -146,7 +146,7 @@ const Dashboard = () => {
                         </div>
                         <button
                             onClick={() => setShowCompanyForm(true)}
-                            className="p-2.5 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 text-slate-500"
+                            className="p-2.5 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 text-slate-500 shrink-0"
                             title="Nueva Empresa"
                         >
                             <Plus className="w-5 h-5" />
@@ -158,7 +158,7 @@ const Dashboard = () => {
                                     setEditingItem(company);
                                     setShowCompanyForm(true);
                                 }}
-                                className="p-2.5 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 text-slate-500"
+                                className="p-2.5 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 text-slate-500 shrink-0"
                                 title="Editar Empresa"
                             >
                                 <Settings className="w-5 h-5" />
@@ -167,7 +167,7 @@ const Dashboard = () => {
                     </div>
 
                     {/* Universal Search */}
-                    <div className="relative flex-1 max-w-2xl">
+                    <div className="relative flex-1 w-full lg:max-w-2xl">
                         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                             <Search className="h-5 w-5 text-slate-400" />
                         </div>
@@ -181,15 +181,11 @@ const Dashboard = () => {
                     </div>
 
                     {/* Actions */}
-                    <div className="flex items-center space-x-2">
-                        {/* Only show "Add" based on active tab or all? Keeping quick actions for all is better UX */}
-                        {/* But we need to handle specific adds too? 
-                     Let's keep the Quick Actions as shortcuts.
-                 */}
+                    <div className="flex items-center gap-2 overflow-x-auto pb-2 lg:pb-0 no-scrollbar">
                         <button
                             onClick={() => setShowStaffForm(true)}
                             disabled={!selectedCompanyId}
-                            className="p-2.5 bg-white border border-slate-300 rounded-lg text-slate-500 hover:bg-slate-50 hover:text-green-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="p-2.5 bg-white border border-slate-300 rounded-lg text-slate-500 hover:bg-slate-50 hover:text-green-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shrink-0"
                             title="Nuevo Personal"
                         >
                             <Users className="w-5 h-5" />
@@ -197,7 +193,7 @@ const Dashboard = () => {
                         <button
                             onClick={() => setShowDeviceForm(true)}
                             disabled={!selectedCompanyId}
-                            className="p-2.5 bg-white border border-slate-300 rounded-lg text-slate-500 hover:bg-slate-50 hover:text-purple-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="p-2.5 bg-white border border-slate-300 rounded-lg text-slate-500 hover:bg-slate-50 hover:text-purple-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shrink-0"
                             title="Nuevo Dispositivo"
                         >
                             <Monitor className="w-5 h-5" />
@@ -205,16 +201,16 @@ const Dashboard = () => {
                         <button
                             onClick={() => setShowEventForm(true)}
                             disabled={!selectedCompanyId}
-                            className="p-2.5 bg-white border border-slate-300 rounded-lg text-slate-500 hover:bg-slate-50 hover:text-orange-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="p-2.5 bg-white border border-slate-300 rounded-lg text-slate-500 hover:bg-slate-50 hover:text-orange-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shrink-0"
                             title="Registrar Evento"
                         >
                             <AlertTriangle className="w-5 h-5" />
                         </button>
-                        <div className="h-6 w-px bg-slate-300 mx-2 hidden md:block"></div>
+                        <div className="h-6 w-px bg-slate-300 mx-2 hidden lg:block"></div>
                         <button
                             onClick={() => setShowEntryForm(true)}
                             disabled={!selectedCompanyId}
-                            className={`inline-flex items-center px-4 py-2.5 border border-transparent shadow-sm text-sm font-medium rounded-lg text-white transition-colors ${!selectedCompanyId ? 'bg-slate-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'}`}
+                            className={`inline-flex items-center px-4 py-2.5 border border-transparent shadow-sm text-sm font-medium rounded-lg text-white transition-colors shrink-0 ${!selectedCompanyId ? 'bg-slate-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'}`}
                         >
                             <Plus className="-ml-1 mr-2 h-4 w-4" />
                             Nueva Clave
