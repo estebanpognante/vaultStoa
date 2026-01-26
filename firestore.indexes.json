@@ -1,0 +1,33 @@
+{
+    "indexes": [
+        {
+            "collectionGroup": "vault_entries",
+            "queryScope": "COLLECTION",
+            "fields": [
+                {
+                    "fieldPath": "companyId",
+                    "order": "ASCENDING"
+                },
+                {
+                    "fieldPath": "search_vector",
+                    "arrayConfig": "CONTAINS"
+                }
+            ]
+        },
+        {
+            "collectionGroup": "devices",
+            "queryScope": "COLLECTION",
+            "fields": [
+                {
+                    "fieldPath": "companyId",
+                    "order": "ASCENDING"
+                },
+                {
+                    "fieldPath": "deviceName",
+                    "order": "ASCENDING"
+                }
+            ]
+        }
+    ],
+    "fieldOverrides": []
+}
