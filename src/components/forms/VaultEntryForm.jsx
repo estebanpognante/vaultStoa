@@ -5,9 +5,9 @@ import { EncryptionService } from '../../services/encryptionService';
 import { generateSearchVector } from '../../utils/searchVectorGenerator';
 import { db } from '../../config/firebase';
 import { collection, addDoc, doc, updateDoc, query, where, onSnapshot, getDoc, arrayUnion } from 'firebase/firestore';
-import { Save, X, User, Monitor, Link, ArrowRight } from 'lucide-react';
+import { Save, X, User, Monitor, Link, ArrowRight, Eye, EyeOff } from 'lucide-react';
 
-const VaultEntryForm = ({ companyId, initialData, onClose, onSuccess }) => {
+const VaultEntryForm = ({ companyId, initialData, onClose, onSuccess, readOnly = false }) => {
     const { masterKey } = useSecurity();
     const [formData, setFormData] = useState({
         serviceName: '',
@@ -21,6 +21,8 @@ const VaultEntryForm = ({ companyId, initialData, onClose, onSuccess }) => {
         relatedId: '', // Primary assignment
         secondaryRelatedId: '' // For Device_Password double linking
     });
+
+    const [showPassword, setShowPassword] = useState(false);
 
     const [staffList, setStaffList] = useState([]);
     const [deviceList, setDeviceList] = useState([]);
@@ -67,6 +69,7 @@ const VaultEntryForm = ({ companyId, initialData, onClose, onSuccess }) => {
     }, [initialData]);
 
     const handleChange = (e) => {
+        if (readOnly) return;
         setFormData({ ...formData, [e.target.name]: e.target.value });
     };
 
@@ -74,6 +77,7 @@ const VaultEntryForm = ({ companyId, initialData, onClose, onSuccess }) => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        if (readOnly) return;
 
         // Helper to show error
         const showError = (msg) => setErrorMsg(msg);
@@ -194,9 +198,9 @@ const VaultEntryForm = ({ companyId, initialData, onClose, onSuccess }) => {
 
     return (
         <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-            <div className="bg-white rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto relative">
+            <div className={`bg-white rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto relative ${readOnly ? 'border-4 border-blue-100' : ''}`}>
                 <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50 rounded-t-xl">
-                    <h2 className="text-xl font-bold text-slate-800">Nueva Credencial</h2>
+                    <h2 className="text-xl font-bold text-slate-800">{readOnly ? 'Detalles de la Credencial' : 'Nueva Credencial'}</h2>
                     <button onClick={onClose} className="text-slate-400 hover:text-slate-600">
                         <X className="w-6 h-6" />
                     </button>
@@ -216,6 +220,7 @@ const VaultEntryForm = ({ companyId, initialData, onClose, onSuccess }) => {
                         <div className="flex items-center space-x-4 mb-2">
                             <label className="inline-flex items-center">
                                 <input
+                                    disabled={readOnly}
                                     type="radio"
                                     name="relatedType"
                                     value="staff"
@@ -229,6 +234,7 @@ const VaultEntryForm = ({ companyId, initialData, onClose, onSuccess }) => {
                             </label>
                             <label className="inline-flex items-center">
                                 <input
+                                    disabled={readOnly}
                                     type="radio"
                                     name="relatedType"
                                     value="device"
@@ -243,6 +249,7 @@ const VaultEntryForm = ({ companyId, initialData, onClose, onSuccess }) => {
                         </div>
 
                         <select
+                            disabled={readOnly}
                             required
                             name="relatedId"
                             value={formData.relatedId}
@@ -276,6 +283,7 @@ const VaultEntryForm = ({ companyId, initialData, onClose, onSuccess }) => {
                                 </div>
 
                                 <select
+                                    disabled={readOnly}
                                     required
                                     name="secondaryRelatedId"
                                     value={formData.secondaryRelatedId}
@@ -300,12 +308,12 @@ const VaultEntryForm = ({ companyId, initialData, onClose, onSuccess }) => {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div className="md:col-span-2">
                             <label className="block text-sm font-medium text-slate-700">Nombre del Servicio</label>
-                            <input required name="serviceName" value={formData.serviceName} onChange={handleChange} className="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border" placeholder="ej. Acceso Windows, BIOS, Admin Local..." />
+                            <input disabled={readOnly} required name="serviceName" value={formData.serviceName} onChange={handleChange} className="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border" placeholder="ej. Acceso Windows, BIOS, Admin Local..." />
                         </div>
 
                         <div>
                             <label className="block text-sm font-medium text-slate-700">Categoría</label>
-                            <select name="category" value={formData.category} onChange={handleChange} className="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border">
+                            <select disabled={readOnly} name="category" value={formData.category} onChange={handleChange} className="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border">
                                 <option value="SaaS_App">SaaS App</option>
                                 <option value="Device_Password" className="font-bold bg-blue-50">🔐 Clave de Dispositivo</option>
                                 <option value="OS_Login">OS Login</option>
@@ -319,37 +327,70 @@ const VaultEntryForm = ({ companyId, initialData, onClose, onSuccess }) => {
 
                         <div>
                             <label className="block text-sm font-medium text-slate-700">URL de Acceso / IP</label>
-                            <input name="accessUrl" value={formData.accessUrl} onChange={handleChange} className="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border" placeholder="https://..." />
+                            <input disabled={readOnly} name="accessUrl" value={formData.accessUrl} onChange={handleChange} className="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border" placeholder="https://..." />
                         </div>
 
                         <div>
                             <label className="block text-sm font-medium text-slate-700">
                                 {formData.category === 'Device_Password' ? 'Usuario del Dispositivo (Local)' : 'Usuario'}
                             </label>
-                            <input required name="username" value={formData.username} onChange={handleChange} className="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border" placeholder={formData.category === 'Device_Password' ? "ej. Admin, User1..." : ""} />
+                            <input disabled={readOnly} required name="username" value={formData.username} onChange={handleChange} className="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border" placeholder={formData.category === 'Device_Password' ? "ej. Admin, User1..." : ""} />
                         </div>
 
                         <div>
                             <label className="block text-sm font-medium text-slate-700">
                                 {formData.category === 'Device_Password' ? 'Contraseña del Dispositivo' : 'Contraseña'}
                             </label>
-                            <input required={!initialData} type="password" name="password" value={formData.password} onChange={handleChange} className="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border" placeholder={initialData ? "(Sin cambios)" : ""} />
-                            <p className="text-xs text-slate-500 mt-1">Se encriptará con AES-256 antes de enviar.</p>
+                            <div className="relative mt-1">
+                                <input
+                                    readOnly={readOnly}
+                                    required={!initialData && !readOnly}
+                                    type={showPassword ? "text" : "password"}
+                                    name="password"
+                                    value={formData.password}
+                                    onChange={handleChange}
+                                    className="block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border pr-10"
+                                    placeholder={initialData && !formData.password ? "(Sin cambios)" : "••••••••"}
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        if (!showPassword && !formData.password && initialData?.password) {
+                                            const decrypted = EncryptionService.decrypt(initialData.password, masterKey);
+                                            if (decrypted) setFormData(prev => ({ ...prev, password: decrypted }));
+                                        }
+                                        setShowPassword(!showPassword);
+                                    }}
+                                    className="absolute inset-y-0 right-0 px-3 flex items-center text-slate-400 hover:text-blue-600 focus:outline-none"
+                                    title={showPassword ? "Ocultar" : "Ver"}
+                                >
+                                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                                </button>
+                            </div>
+                            {!readOnly && <p className="text-xs text-slate-500 mt-1">Se encriptará con AES-256 antes de enviar.</p>}
                         </div>
 
                         <div className="md:col-span-2">
                             <label className="block text-sm font-medium text-slate-700">Notas</label>
-                            <textarea name="accessNotes" value={formData.accessNotes} onChange={handleChange} className="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border" rows="3"></textarea>
+                            <textarea disabled={readOnly} name="accessNotes" value={formData.accessNotes} onChange={handleChange} className="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border" rows="3"></textarea>
                         </div>
                     </div>
 
                     <div className="flex justify-end pt-4">
-                        <button type="button" onClick={onClose} className="mr-3 px-4 py-2 border border-slate-300 shadow-sm text-sm font-medium rounded-md text-slate-700 bg-white hover:bg-slate-50">
-                            Cancelar
-                        </button>
-                        <button disabled={loading} type="submit" className="inline-flex justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 shadow-lg shadow-blue-500/30">
-                            {loading ? 'Encriptando...' : <><Save className="w-4 h-4 mr-2" /> Guardar Credencial</>}
-                        </button>
+                        {readOnly ? (
+                            <button type="button" onClick={onClose} className="mr-3 px-4 py-2 border border-blue-300 shadow-sm text-sm font-medium rounded-md text-blue-700 bg-blue-50 hover:bg-blue-100">
+                                Cerrar
+                            </button>
+                        ) : (
+                            <>
+                                <button type="button" onClick={onClose} className="mr-3 px-4 py-2 border border-slate-300 shadow-sm text-sm font-medium rounded-md text-slate-700 bg-white hover:bg-slate-50">
+                                    Cancelar
+                                </button>
+                                <button disabled={loading} type="submit" className="inline-flex justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 shadow-lg shadow-blue-500/30">
+                                    {loading ? 'Encriptando...' : <><Save className="w-4 h-4 mr-2" /> Guardar Credencial</>}
+                                </button>
+                            </>
+                        )}
                     </div>
                 </form>
 

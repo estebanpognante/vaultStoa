@@ -4,9 +4,9 @@ import { EncryptionService } from '../../services/encryptionService'; // New Imp
 import { generateSearchVector } from '../../utils/searchVectorGenerator';
 import { db } from '../../config/firebase';
 import { collection, addDoc, doc, updateDoc, Timestamp, query, where, onSnapshot, getDocs } from 'firebase/firestore'; // Added getDocs
-import { Save, X, Monitor, UserPlus, Info, Check, Key, Trash2, User } from 'lucide-react'; // Added User icon for visual indication
+import { Save, X, Monitor, UserPlus, Info, Check, Key, Trash2, User, Eye, EyeOff } from 'lucide-react'; // Added Eye, EyeOff
 
-const DeviceForm = ({ companyId, initialData, onClose, onSuccess, onAddStaff }) => {
+const DeviceForm = ({ companyId, initialData, onClose, onSuccess, onAddStaff, readOnly = false }) => {
     const { masterKey } = useSecurity(); // Get Master Key
     const [formData, setFormData] = useState({
         deviceName: '',
@@ -24,7 +24,17 @@ const DeviceForm = ({ companyId, initialData, onClose, onSuccess, onAddStaff }) 
     });
 
     // Temporary state for new local account input
-    const [newAccount, setNewAccount] = useState({ username: '', password: '' });
+    const [newAccount, setNewAccount] = useState({ username: '', password: '', assignedUserId: '' });
+
+    // Password Visibility State for Local Accounts
+    const [visiblePasswords, setVisiblePasswords] = useState({}); // { index: true/false }
+
+    const togglePasswordVisibility = (index, encryptedPassword) => {
+        setVisiblePasswords(prev => ({
+            ...prev,
+            [index]: !prev[index]
+        }));
+    };
 
     const [staffList, setStaffList] = useState([]);
     const [loading, setLoading] = useState(false);
@@ -57,10 +67,12 @@ const DeviceForm = ({ companyId, initialData, onClose, onSuccess, onAddStaff }) 
     }, [companyId]);
 
     const handleChange = (e) => {
+        if (readOnly) return;
         setFormData({ ...formData, [e.target.name]: e.target.value });
     };
 
     const toggleUserAssignment = (staffId) => {
+        if (readOnly) return;
         const currentAssignments = formData.assignedUserIds || [];
         if (currentAssignments.includes(staffId)) {
             setFormData({ ...formData, assignedUserIds: currentAssignments.filter(id => id !== staffId) });
@@ -71,6 +83,7 @@ const DeviceForm = ({ companyId, initialData, onClose, onSuccess, onAddStaff }) 
 
     // --- Local Account Logic ---
     const handleAddAccount = () => {
+        if (readOnly) return;
         if (!newAccount.username || !newAccount.password) return alert("Ingrese usuario y contraseña");
         if (!masterKey) return alert("Error de Seguridad: Falta Master Key");
 
@@ -89,6 +102,7 @@ const DeviceForm = ({ companyId, initialData, onClose, onSuccess, onAddStaff }) 
     };
 
     const handleRemoveAccount = (index) => {
+        if (readOnly) return;
         const updated = [...(formData.localAccounts || [])];
         updated.splice(index, 1);
         setFormData({ ...formData, localAccounts: updated });
@@ -147,6 +161,7 @@ const DeviceForm = ({ companyId, initialData, onClose, onSuccess, onAddStaff }) 
 
     const handleSubmit = async (e) => {
         if (e) e.preventDefault();
+        if (readOnly) return;
 
         // Validation: Check for unsaved Local Account data
         if (!showUnsavedModal && (newAccount.username || newAccount.password || newAccount.assignedUserId)) {
@@ -189,11 +204,11 @@ const DeviceForm = ({ companyId, initialData, onClose, onSuccess, onAddStaff }) 
 
     return (
         <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4 z-50 overflow-y-auto">
-            <div className="bg-white rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto relative my-8">
+            <div className={`bg-white rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto relative my-8 ${readOnly ? 'border-4 border-blue-100' : ''}`}>
                 <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50 rounded-t-xl">
                     <div className="flex items-center space-x-2">
-                        <Monitor className="w-5 h-5 text-purple-600" />
-                        <h2 className="text-xl font-bold text-slate-800">Nuevo Dispositivo</h2>
+                        <Monitor className={`w-5 h-5 ${readOnly ? 'text-blue-600' : 'text-purple-600'}`} />
+                        <h2 className="text-xl font-bold text-slate-800">{readOnly ? 'Detalles del Dispositivo' : (initialData ? 'Editar Dispositivo' : 'Nuevo Dispositivo')}</h2>
                     </div>
                     <button onClick={onClose} className="text-slate-400 hover:text-slate-600 transition-colors">
                         <X className="w-6 h-6" />
@@ -210,35 +225,40 @@ const DeviceForm = ({ companyId, initialData, onClose, onSuccess, onAddStaff }) 
                                     <UserPlus className="w-4 h-4 mr-2" />
                                     Asignación de Usuarios
                                 </h3>
-                                <button
-                                    type="button"
-                                    onClick={onAddStaff}
-                                    className="text-xs flex items-center text-blue-600 hover:text-blue-800 font-medium"
-                                >
-                                    <UserPlus className="w-3 h-3 mr-1" />
-                                    Nuevo Personal
-                                </button>
+                                {!readOnly && (
+                                    <button
+                                        type="button"
+                                        onClick={onAddStaff}
+                                        className="text-xs flex items-center text-blue-600 hover:text-blue-800 font-medium"
+                                    >
+                                        <UserPlus className="w-3 h-3 mr-1" />
+                                        Nuevo Personal
+                                    </button>
+                                )}
                             </div>
 
                             {loadingStaff ? (
                                 <div className="text-xs text-slate-500">Cargando personal...</div>
                             ) : (
                                 <div className="space-y-2">
-                                    <select
-                                        className="block w-full rounded-lg border-slate-300 shadow-sm focus:border-purple-500 focus:ring-purple-500 sm:text-sm p-2 bg-white"
-                                        onChange={(e) => {
-                                            if (e.target.value) {
-                                                toggleUserAssignment(e.target.value);
-                                                e.target.value = ''; // Reset
-                                            }
-                                        }}
-                                        defaultValue=""
-                                    >
-                                        <option value="" disabled>Seleccionar usuario para asignar...</option>
-                                        {staffList.filter(s => !(formData.assignedUserIds || []).includes(s.id)).map(s => (
-                                            <option key={s.id} value={s.id}>{s.firstName} {s.lastName} ({s.position})</option>
-                                        ))}
-                                    </select>
+                                    {!readOnly && (
+                                        <select
+                                            disabled={readOnly}
+                                            className="block w-full rounded-lg border-slate-300 shadow-sm focus:border-purple-500 focus:ring-purple-500 sm:text-sm p-2 bg-white"
+                                            onChange={(e) => {
+                                                if (e.target.value) {
+                                                    toggleUserAssignment(e.target.value);
+                                                    e.target.value = ''; // Reset
+                                                }
+                                            }}
+                                            defaultValue=""
+                                        >
+                                            <option value="" disabled>Seleccionar usuario para asignar...</option>
+                                            {staffList.filter(s => !(formData.assignedUserIds || []).includes(s.id)).map(s => (
+                                                <option key={s.id} value={s.id}>{s.firstName} {s.lastName} ({s.position})</option>
+                                            ))}
+                                        </select>
+                                    )}
 
                                     <div className="flex flex-wrap gap-2 mt-2">
                                         {(formData.assignedUserIds || []).map(uid => {
@@ -246,9 +266,11 @@ const DeviceForm = ({ companyId, initialData, onClose, onSuccess, onAddStaff }) 
                                             return (
                                                 <span key={uid} className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
                                                     {user ? `${user.firstName} ${user.lastName}` : 'Usuario Desconocido'}
-                                                    <button type="button" onClick={() => toggleUserAssignment(uid)} className="ml-1.5 inline-flex text-purple-600 hover:text-purple-800 focus:outline-none">
-                                                        <X className="w-3 h-3" />
-                                                    </button>
+                                                    {!readOnly && (
+                                                        <button type="button" onClick={() => toggleUserAssignment(uid)} className="ml-1.5 inline-flex text-purple-600 hover:text-purple-800 focus:outline-none">
+                                                            <X className="w-3 h-3" />
+                                                        </button>
+                                                    )}
                                                 </span>
                                             );
                                         })}
@@ -266,11 +288,11 @@ const DeviceForm = ({ companyId, initialData, onClose, onSuccess, onAddStaff }) 
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                 <div>
                                     <label className="block text-sm font-medium text-slate-700">Nombre Equipo</label>
-                                    <input required name="deviceName" value={formData.deviceName} onChange={handleChange} className="mt-1 block w-full rounded-lg border-slate-300 shadow-sm focus:border-purple-500 focus:ring-purple-500 sm:text-sm p-2.5 border" placeholder="NB-VENTAS-01" />
+                                    <input disabled={readOnly} required name="deviceName" value={formData.deviceName} onChange={handleChange} className="mt-1 block w-full rounded-lg border-slate-300 shadow-sm focus:border-purple-500 focus:ring-purple-500 sm:text-sm p-2.5 border" placeholder="NB-VENTAS-01" />
                                 </div>
                                 <div>
                                     <label className="block text-sm font-medium text-slate-700">Tipo</label>
-                                    <select name="deviceType" value={formData.deviceType} onChange={handleChange} className="mt-1 block w-full rounded-lg border-slate-300 shadow-sm focus:border-purple-500 focus:ring-purple-500 sm:text-sm p-2.5 border">
+                                    <select disabled={readOnly} name="deviceType" value={formData.deviceType} onChange={handleChange} className="mt-1 block w-full rounded-lg border-slate-300 shadow-sm focus:border-purple-500 focus:ring-purple-500 sm:text-sm p-2.5 border">
                                         <option value="Notebook">Notebook</option>
                                         <option value="Desktop">Desktop</option>
                                         <option value="Server">Server</option>
@@ -281,7 +303,7 @@ const DeviceForm = ({ companyId, initialData, onClose, onSuccess, onAddStaff }) 
                                 </div>
                                 <div>
                                     <label className="block text-sm font-medium text-slate-700">Estado</label>
-                                    <select name="status" value={formData.status} onChange={handleChange} className="mt-1 block w-full rounded-lg border-slate-300 shadow-sm focus:border-purple-500 focus:ring-purple-500 sm:text-sm p-2.5 border">
+                                    <select disabled={readOnly} name="status" value={formData.status} onChange={handleChange} className="mt-1 block w-full rounded-lg border-slate-300 shadow-sm focus:border-purple-500 focus:ring-purple-500 sm:text-sm p-2.5 border">
                                         <option value="In_Use">En Uso</option>
                                         <option value="Stock">Stock</option>
                                         <option value="Repair">Reparación</option>
@@ -297,27 +319,27 @@ const DeviceForm = ({ companyId, initialData, onClose, onSuccess, onAddStaff }) 
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                 <div>
                                     <label className="block text-sm font-medium text-slate-700">Marca</label>
-                                    <input name="brand" value={formData.brand} onChange={handleChange} className="mt-1 block w-full rounded-lg border-slate-300 shadow-sm focus:border-purple-500 focus:ring-purple-500 sm:text-sm p-2.5 border" />
+                                    <input disabled={readOnly} name="brand" value={formData.brand} onChange={handleChange} className="mt-1 block w-full rounded-lg border-slate-300 shadow-sm focus:border-purple-500 focus:ring-purple-500 sm:text-sm p-2.5 border" />
                                 </div>
                                 <div>
                                     <label className="block text-sm font-medium text-slate-700">Modelo</label>
-                                    <input name="model" value={formData.model} onChange={handleChange} className="mt-1 block w-full rounded-lg border-slate-300 shadow-sm focus:border-purple-500 focus:ring-purple-500 sm:text-sm p-2.5 border" />
+                                    <input disabled={readOnly} name="model" value={formData.model} onChange={handleChange} className="mt-1 block w-full rounded-lg border-slate-300 shadow-sm focus:border-purple-500 focus:ring-purple-500 sm:text-sm p-2.5 border" />
                                 </div>
                                 <div>
                                     <label className="block text-sm font-medium text-slate-700">Nro. Serie</label>
-                                    <input name="serialNumber" value={formData.serialNumber} onChange={handleChange} className="mt-1 block w-full rounded-lg border-slate-300 shadow-sm focus:border-purple-500 focus:ring-purple-500 sm:text-sm p-2.5 border" />
+                                    <input disabled={readOnly} name="serialNumber" value={formData.serialNumber} onChange={handleChange} className="mt-1 block w-full rounded-lg border-slate-300 shadow-sm focus:border-purple-500 focus:ring-purple-500 sm:text-sm p-2.5 border" />
                                 </div>
                                 <div>
                                     <label className="block text-sm font-medium text-slate-700">Procesador</label>
-                                    <input name="processor" value={formData.processor} onChange={handleChange} className="mt-1 block w-full rounded-lg border-slate-300 shadow-sm focus:border-purple-500 focus:ring-purple-500 sm:text-sm p-2.5 border" />
+                                    <input disabled={readOnly} name="processor" value={formData.processor} onChange={handleChange} className="mt-1 block w-full rounded-lg border-slate-300 shadow-sm focus:border-purple-500 focus:ring-purple-500 sm:text-sm p-2.5 border" />
                                 </div>
                                 <div>
                                     <label className="block text-sm font-medium text-slate-700">RAM</label>
-                                    <input name="ramAmount" value={formData.ramAmount} onChange={handleChange} className="mt-1 block w-full rounded-lg border-slate-300 shadow-sm focus:border-purple-500 focus:ring-purple-500 sm:text-sm p-2.5 border" />
+                                    <input disabled={readOnly} name="ramAmount" value={formData.ramAmount} onChange={handleChange} className="mt-1 block w-full rounded-lg border-slate-300 shadow-sm focus:border-purple-500 focus:ring-purple-500 sm:text-sm p-2.5 border" />
                                 </div>
                                 <div>
                                     <label className="block text-sm font-medium text-slate-700">Almacenamiento</label>
-                                    <input name="storageInfo" value={formData.storageInfo} onChange={handleChange} className="mt-1 block w-full rounded-lg border-slate-300 shadow-sm focus:border-purple-500 focus:ring-purple-500 sm:text-sm p-2.5 border" />
+                                    <input disabled={readOnly} name="storageInfo" value={formData.storageInfo} onChange={handleChange} className="mt-1 block w-full rounded-lg border-slate-300 shadow-sm focus:border-purple-500 focus:ring-purple-500 sm:text-sm p-2.5 border" />
                                 </div>
                             </div>
                         </div>
@@ -333,42 +355,44 @@ const DeviceForm = ({ companyId, initialData, onClose, onSuccess, onAddStaff }) 
                                 </h4>
 
                                 <div className="text-xs text-orange-600 mb-2">
-                                    Estas cuentas se registrarán automáticamente en la Bóveda de Claves.
+                                    These accounts will be automatically registered in the Password Vault.
                                 </div>
 
                                 {/* Add New */}
-                                <div className="flex flex-col md:flex-row gap-2 mb-3">
-                                    <select
-                                        className="flex-1 rounded-md border-orange-200 shadow-sm text-sm p-1.5 focus:border-orange-500 focus:ring-orange-500"
-                                        value={newAccount.assignedUserId || ''}
-                                        onChange={(e) => setNewAccount({ ...newAccount, assignedUserId: e.target.value })}
-                                    >
-                                        <option value="">-- Responsable (Opcional) --</option>
-                                        {staffList.map(s => (
-                                            <option key={s.id} value={s.id}>{s.firstName} {s.lastName}</option>
-                                        ))}
-                                    </select>
-                                    <input
-                                        placeholder="Usuario (ej. Admin)"
-                                        className="flex-1 rounded-md border-orange-200 shadow-sm text-sm p-1.5"
-                                        value={newAccount.username}
-                                        onChange={(e) => setNewAccount({ ...newAccount, username: e.target.value })}
-                                    />
-                                    <input
-                                        type="password"
-                                        placeholder="Contraseña"
-                                        className="flex-1 rounded-md border-orange-200 shadow-sm text-sm p-1.5"
-                                        value={newAccount.password}
-                                        onChange={(e) => setNewAccount({ ...newAccount, password: e.target.value })}
-                                    />
-                                    <button
-                                        type="button"
-                                        onClick={handleAddAccount}
-                                        className="bg-orange-600 text-white px-3 py-1.5 rounded-md text-xs font-medium hover:bg-orange-700 transition-colors"
-                                    >
-                                        Agregar
-                                    </button>
-                                </div>
+                                {!readOnly && (
+                                    <div className="flex flex-col md:flex-row gap-2 mb-3">
+                                        <select
+                                            className="flex-1 rounded-md border-orange-200 shadow-sm text-sm p-1.5 focus:border-orange-500 focus:ring-orange-500"
+                                            value={newAccount.assignedUserId || ''}
+                                            onChange={(e) => setNewAccount({ ...newAccount, assignedUserId: e.target.value })}
+                                        >
+                                            <option value="">-- Responsable (Opcional) --</option>
+                                            {staffList.map(s => (
+                                                <option key={s.id} value={s.id}>{s.firstName} {s.lastName}</option>
+                                            ))}
+                                        </select>
+                                        <input
+                                            placeholder="Usuario (ej. Admin)"
+                                            className="flex-1 rounded-md border-orange-200 shadow-sm text-sm p-1.5"
+                                            value={newAccount.username}
+                                            onChange={(e) => setNewAccount({ ...newAccount, username: e.target.value })}
+                                        />
+                                        <input
+                                            type="password"
+                                            placeholder="Contraseña"
+                                            className="flex-1 rounded-md border-orange-200 shadow-sm text-sm p-1.5"
+                                            value={newAccount.password}
+                                            onChange={(e) => setNewAccount({ ...newAccount, password: e.target.value })}
+                                        />
+                                        <button
+                                            type="button"
+                                            onClick={handleAddAccount}
+                                            className="bg-orange-600 text-white px-3 py-1.5 rounded-md text-xs font-medium hover:bg-orange-700 transition-colors"
+                                        >
+                                            Agregar
+                                        </button>
+                                    </div>
+                                )}
 
                                 {/* List */}
                                 {formData.localAccounts && formData.localAccounts.length > 0 ? (
@@ -379,7 +403,19 @@ const DeviceForm = ({ companyId, initialData, onClose, onSuccess, onAddStaff }) 
                                                 <div key={idx} className="flex justify-between items-center bg-white p-2 rounded border border-orange-100 text-sm">
                                                     <div className="flex items-center space-x-2">
                                                         <span className="font-medium text-slate-700">{acc.username}</span>
-                                                        <span className="text-slate-400 text-xs">••••••••</span>
+                                                        <span className="text-slate-400 text-xs font-mono">
+                                                            {visiblePasswords[idx]
+                                                                ? (EncryptionService.decrypt(acc.password, masterKey) || 'Error desencriptando')
+                                                                : '••••••••'}
+                                                        </span>
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => togglePasswordVisibility(idx, acc.password)}
+                                                            className="text-slate-400 hover:text-blue-600 focus:outline-none p-1"
+                                                            title={visiblePasswords[idx] ? "Ocultar" : "Ver Contraseña"}
+                                                        >
+                                                            {visiblePasswords[idx] ? <EyeOff className="w-3 h-3" /> : <Eye className="w-3 h-3" />}
+                                                        </button>
                                                         {assignedUser && (
                                                             <span className="flex items-center text-xs text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full border border-blue-100">
                                                                 <User className="w-3 h-3 mr-1" />
@@ -387,13 +423,15 @@ const DeviceForm = ({ companyId, initialData, onClose, onSuccess, onAddStaff }) 
                                                             </span>
                                                         )}
                                                     </div>
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => handleRemoveAccount(idx)}
-                                                        className="text-red-400 hover:text-red-600 p-1"
-                                                    >
-                                                        <Trash2 className="w-3 h-3" />
-                                                    </button>
+                                                    {!readOnly && (
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => handleRemoveAccount(idx)}
+                                                            className="text-red-400 hover:text-red-600 p-1"
+                                                        >
+                                                            <Trash2 className="w-3 h-3" />
+                                                        </button>
+                                                    )}
                                                 </div>
                                             );
                                         })}
@@ -406,19 +444,27 @@ const DeviceForm = ({ companyId, initialData, onClose, onSuccess, onAddStaff }) 
                             {/* Static IP (Preserved) */}
                             <div>
                                 <label className="block text-sm font-medium text-slate-700">IP Estática</label>
-                                <input name="ipAddressStatic" value={formData.ipAddressStatic} onChange={handleChange} className="mt-1 block w-full rounded-lg border-slate-300 shadow-sm focus:border-purple-500 focus:ring-purple-500 sm:text-sm p-2.5 border" placeholder="Dejar vacío si es dinámica" />
+                                <input disabled={readOnly} name="ipAddressStatic" value={formData.ipAddressStatic} onChange={handleChange} className="mt-1 block w-full rounded-lg border-slate-300 shadow-sm focus:border-purple-500 focus:ring-purple-500 sm:text-sm p-2.5 border" placeholder="Dejar vacío si es dinámica" />
                             </div>
                         </div>
 
                     </div>
 
                     <div className="flex justify-end pt-4 border-t border-slate-100">
-                        <button type="button" onClick={onClose} className="mr-3 px-4 py-2 border border-slate-300 shadow-sm text-sm font-medium rounded-lg text-slate-700 bg-white hover:bg-slate-50 transition-colors">
-                            Cancelar
-                        </button>
-                        <button disabled={loading} type="submit" className="inline-flex justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition-colors shadow-lg shadow-purple-500/30">
-                            {loading ? 'Guardando...' : <><Save className="w-4 h-4 mr-2" /> Guardar Equipo</>}
-                        </button>
+                        {readOnly ? (
+                            <button type="button" onClick={onClose} className="mr-3 px-4 py-2 border border-blue-300 shadow-sm text-sm font-medium rounded-lg text-blue-700 bg-blue-50 hover:bg-blue-100 transition-colors">
+                                Cerrar
+                            </button>
+                        ) : (
+                            <>
+                                <button type="button" onClick={onClose} className="mr-3 px-4 py-2 border border-slate-300 shadow-sm text-sm font-medium rounded-lg text-slate-700 bg-white hover:bg-slate-50 transition-colors">
+                                    Cancelar
+                                </button>
+                                <button disabled={loading} type="submit" className="inline-flex justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition-colors shadow-lg shadow-purple-500/30">
+                                    {loading ? 'Guardando...' : <><Save className="w-4 h-4 mr-2" /> Guardar Equipo</>}
+                                </button>
+                            </>
+                        )}
                     </div>
                 </form>
 

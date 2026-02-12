@@ -21,7 +21,7 @@ const Dashboard = () => {
     const [loading, setLoading] = useState(false);
 
     // UI State
-    const [activeTab, setActiveTab] = useState('vault'); // vault, staff, devices, events
+    const [activeTab, setActiveTab] = useState('staff'); // vault, staff, devices, events
     const [editingItem, setEditingItem] = useState(null);
 
     // Modals State
@@ -222,13 +222,6 @@ const Dashboard = () => {
                 <div className="mb-6 border-b border-slate-200 overflow-x-auto no-scrollbar">
                     <nav className="-mb-px flex space-x-8 px-1" aria-label="Tabs">
                         <button
-                            onClick={() => setActiveTab('vault')}
-                            className={`${activeTab === 'vault' ? 'border-blue-500 text-blue-600' : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'} whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center shrink-0`}
-                        >
-                            <Shield className="w-4 h-4 mr-2" />
-                            Bóveda
-                        </button>
-                        <button
                             onClick={() => setActiveTab('staff')}
                             className={`${activeTab === 'staff' ? 'border-green-500 text-green-600' : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'} whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center shrink-0`}
                         >
@@ -248,6 +241,13 @@ const Dashboard = () => {
                         >
                             <Activity className="w-4 h-4 mr-2" />
                             Eventos / Logs
+                        </button>
+                        <button
+                            onClick={() => setActiveTab('vault')}
+                            className={`${activeTab === 'vault' ? 'border-blue-500 text-blue-600' : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'} whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center shrink-0`}
+                        >
+                            <Shield className="w-4 h-4 mr-2" />
+                            Bóveda
                         </button>
                     </nav>
                 </div>

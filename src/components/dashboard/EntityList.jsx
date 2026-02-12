@@ -1,11 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { db } from '../../config/firebase';
 import { collection, query, where, onSnapshot, doc, deleteDoc } from 'firebase/firestore';
-import { Edit2, Trash2, Smartphone, Users, AlertTriangle, Monitor } from 'lucide-react';
+import { Edit2, Trash2, Smartphone, Users, AlertTriangle, Monitor, Eye } from 'lucide-react';
+import StaffDetailsModal from './StaffDetailsModal';
+
 
 const EntityList = ({ companyId, collectionName, onEdit }) => {
     const [items, setItems] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [selectedStaff, setSelectedStaff] = useState(null);
 
     useEffect(() => {
         if (!companyId) return;
@@ -61,7 +64,11 @@ const EntityList = ({ companyId, collectionName, onEdit }) => {
                     </thead>
                     <tbody className="bg-white divide-y divide-slate-200">
                         {items.map((item) => (
-                            <tr key={item.id} className="hover:bg-slate-50 transition-colors">
+                            <tr
+                                key={item.id}
+                                className={`transition-colors ${collectionName === 'staff' ? 'hover:bg-blue-50 cursor-pointer' : 'hover:bg-slate-50'}`}
+                                onClick={() => collectionName === 'staff' && setSelectedStaff(item)}
+                            >
                                 <td className="px-6 py-4 whitespace-nowrap">
                                     <div className="flex items-center">
                                         <div className="flex-shrink-0 h-10 w-10 flex items-center justify-center bg-slate-100 rounded-full text-slate-500">
@@ -88,7 +95,7 @@ const EntityList = ({ companyId, collectionName, onEdit }) => {
                                     <div className="text-sm text-slate-900">
                                         {collectionName === 'staff' && item.workEmail}
                                         {collectionName === 'devices' && `${item.brand} ${item.model}`}
-                                        {collectionName === 'events' && item.description?.substring(0, 30)}
+                                        {collectionName === 'events' && `${item.priority} - ${item.description?.substring(0, 30)}`}
                                     </div>
                                     <div className="text-sm text-slate-500">
                                         {collectionName === 'staff' && item.phone}
@@ -98,8 +105,13 @@ const EntityList = ({ companyId, collectionName, onEdit }) => {
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap">
                                     <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
-                                        ${(item.employmentStatus === 'Active' || item.status === 'In_Use') ? 'bg-green-100 text-green-800' : 'bg-slate-100 text-slate-800'}`}>
-                                        {item.employmentStatus || item.status || item.priority}
+                                        ${(item.employmentStatus === 'Active' || item.status === 'In_Use' || item.status === 'Closed') ? 'bg-green-100 text-green-800' : ''}
+                                        ${(item.status === 'Open') ? 'bg-red-100 text-red-800' : ''}
+                                        ${(!item.status && !item.employmentStatus) ? 'bg-slate-100 text-slate-800' : ''}
+                                    `}>
+                                        {collectionName === 'events'
+                                            ? (item.status === 'Open' ? 'Abierto' : 'Finalizado')
+                                            : (item.employmentStatus || item.status || item.priority)}
                                     </span>
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
@@ -111,6 +123,13 @@ const EntityList = ({ companyId, collectionName, onEdit }) => {
                     </tbody>
                 </table>
             </div>
+
+            {selectedStaff && (
+                <StaffDetailsModal
+                    staff={selectedStaff}
+                    onClose={() => setSelectedStaff(null)}
+                />
+            )}
         </div>
     );
 };
