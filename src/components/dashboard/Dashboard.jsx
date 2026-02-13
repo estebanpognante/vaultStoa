@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Building, Plus, Database, Settings, Users, Monitor, AlertTriangle, List, Shield, Activity, Trash2 } from 'lucide-react';
+import { Search, Building, Plus, Database, Settings, Users, Monitor, AlertTriangle, List, Shield, Activity, Trash2, LogOut, Key } from 'lucide-react';
 import VaultCard from './VaultCard';
 import EntityList from './EntityList';
+import { useSecurity } from '../../context/SecurityContext';
 // In a real app, we would fetch from Firestore here. 
 // For Phase 3 Verification, I'll mock the data if DB is empty or implement the hook.
 // I'll implement the actual Firestore subscription.
@@ -30,6 +31,10 @@ const Dashboard = () => {
     const [showStaffForm, setShowStaffForm] = useState(false);
     const [showDeviceForm, setShowDeviceForm] = useState(false);
     const [showEventForm, setShowEventForm] = useState(false);
+
+    // User Menu State
+    const [showUserMenu, setShowUserMenu] = useState(false);
+    const { logout } = useSecurity();
 
     const handleDeleteEntry = async (id) => {
         if (window.confirm("¿Confirma que desea eliminar esta clave de la bóveda?")) {
@@ -107,14 +112,34 @@ const Dashboard = () => {
                     <div className="flex justify-between items-center h-16">
                         <div className="flex items-center">
                             <Database className="w-8 h-8 text-blue-600 mr-3" />
-                            <span className="font-bold text-xl text-slate-800 tracking-tight">Vault-CRM</span>
+                            <span className="font-bold text-xl text-slate-800 tracking-tight">STOA - Vault</span>
                         </div>
                         <div className="flex items-center space-x-4">
                             <button className="p-2 text-slate-400 hover:text-slate-600 transition-colors">
                                 <Settings className="w-5 h-5" />
                             </button>
-                            <div className="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-700 font-bold text-xs ring-2 ring-white shadow-sm">
-                                AD
+                            <div className="relative">
+                                <button
+                                    onClick={() => setShowUserMenu(!showUserMenu)}
+                                    className="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-700 font-bold text-xs ring-2 ring-white shadow-sm hover:ring-blue-200 transition-all focus:outline-none"
+                                >
+                                    AD
+                                </button>
+
+                                {showUserMenu && (
+                                    <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 ring-1 ring-black ring-opacity-5 z-50">
+                                        <button
+                                            onClick={() => {
+                                                setShowUserMenu(false);
+                                                logout();
+                                            }}
+                                            className="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-100 w-full text-left flex items-center"
+                                        >
+                                            <LogOut className="w-4 h-4 mr-2" />
+                                            Cerrar Sesión
+                                        </button>
+                                    </div>
+                                )}
                             </div>
                         </div>
                     </div>
@@ -185,7 +210,7 @@ const Dashboard = () => {
                         <button
                             onClick={() => setShowStaffForm(true)}
                             disabled={!selectedCompanyId}
-                            className="p-2.5 bg-white border border-slate-300 rounded-lg text-slate-500 hover:bg-slate-50 hover:text-green-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shrink-0"
+                            className="p-2.5 bg-white border border-slate-300 rounded-lg text-slate-500 hover:bg-blue-50 hover:text-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shrink-0"
                             title="Nuevo Personal"
                         >
                             <Users className="w-5 h-5" />
@@ -193,7 +218,7 @@ const Dashboard = () => {
                         <button
                             onClick={() => setShowDeviceForm(true)}
                             disabled={!selectedCompanyId}
-                            className="p-2.5 bg-white border border-slate-300 rounded-lg text-slate-500 hover:bg-slate-50 hover:text-purple-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shrink-0"
+                            className="p-2.5 bg-white border border-slate-300 rounded-lg text-slate-500 hover:bg-blue-50 hover:text-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shrink-0"
                             title="Nuevo Dispositivo"
                         >
                             <Monitor className="w-5 h-5" />
@@ -201,7 +226,7 @@ const Dashboard = () => {
                         <button
                             onClick={() => setShowEventForm(true)}
                             disabled={!selectedCompanyId}
-                            className="p-2.5 bg-white border border-slate-300 rounded-lg text-slate-500 hover:bg-slate-50 hover:text-orange-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shrink-0"
+                            className="p-2.5 bg-white border border-slate-300 rounded-lg text-slate-500 hover:bg-blue-50 hover:text-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shrink-0"
                             title="Registrar Evento"
                         >
                             <AlertTriangle className="w-5 h-5" />
@@ -210,10 +235,10 @@ const Dashboard = () => {
                         <button
                             onClick={() => setShowEntryForm(true)}
                             disabled={!selectedCompanyId}
-                            className={`inline-flex items-center px-4 py-2.5 border border-transparent shadow-sm text-sm font-medium rounded-lg text-white transition-colors shrink-0 ${!selectedCompanyId ? 'bg-slate-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'}`}
+                            className="p-2.5 bg-white border border-slate-300 rounded-lg text-slate-500 hover:bg-blue-50 hover:text-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shrink-0"
+                            title="Nueva Clave"
                         >
-                            <Plus className="-ml-1 mr-2 h-4 w-4" />
-                            Nueva Clave
+                            <Key className="w-5 h-5" />
                         </button>
                     </div>
                 </div>
