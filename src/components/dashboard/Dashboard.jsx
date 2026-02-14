@@ -206,11 +206,11 @@ const Dashboard = () => {
                     </div>
 
                     {/* Actions */}
-                    <div className="flex items-center gap-2 overflow-x-auto pb-2 lg:pb-0 no-scrollbar">
+                    <div className="flex items-center gap-2 overflow-x-auto pb-2 lg:pb-0 no-scrollbar mb-4 lg:mb-0">
                         <button
                             onClick={() => setShowStaffForm(true)}
                             disabled={!selectedCompanyId}
-                            className="p-2.5 bg-white border border-slate-300 rounded-lg text-slate-500 hover:bg-blue-50 hover:text-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shrink-0"
+                            className="flex-1 lg:flex-none p-2.5 bg-white border border-slate-300 rounded-lg text-slate-500 hover:bg-blue-50 hover:text-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shrink-0 flex justify-center"
                             title="Nuevo Personal"
                         >
                             <Users className="w-5 h-5" />
@@ -218,7 +218,7 @@ const Dashboard = () => {
                         <button
                             onClick={() => setShowDeviceForm(true)}
                             disabled={!selectedCompanyId}
-                            className="p-2.5 bg-white border border-slate-300 rounded-lg text-slate-500 hover:bg-blue-50 hover:text-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shrink-0"
+                            className="flex-1 lg:flex-none p-2.5 bg-white border border-slate-300 rounded-lg text-slate-500 hover:bg-blue-50 hover:text-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shrink-0 flex justify-center"
                             title="Nuevo Dispositivo"
                         >
                             <Monitor className="w-5 h-5" />
@@ -226,7 +226,7 @@ const Dashboard = () => {
                         <button
                             onClick={() => setShowEventForm(true)}
                             disabled={!selectedCompanyId}
-                            className="p-2.5 bg-white border border-slate-300 rounded-lg text-slate-500 hover:bg-blue-50 hover:text-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shrink-0"
+                            className="flex-1 lg:flex-none p-2.5 bg-white border border-slate-300 rounded-lg text-slate-500 hover:bg-blue-50 hover:text-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shrink-0 flex justify-center"
                             title="Registrar Evento"
                         >
                             <AlertTriangle className="w-5 h-5" />
@@ -235,7 +235,7 @@ const Dashboard = () => {
                         <button
                             onClick={() => setShowEntryForm(true)}
                             disabled={!selectedCompanyId}
-                            className="p-2.5 bg-white border border-slate-300 rounded-lg text-slate-500 hover:bg-blue-50 hover:text-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shrink-0"
+                            className="flex-1 lg:flex-none p-2.5 bg-white border border-slate-300 rounded-lg text-slate-500 hover:bg-blue-50 hover:text-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shrink-0 flex justify-center"
                             title="Nueva Clave"
                         >
                             <Key className="w-5 h-5" />
@@ -244,34 +244,35 @@ const Dashboard = () => {
                 </div>
 
                 {/* Tab Navigation */}
-                <div className="mb-6 border-b border-slate-200 overflow-x-auto no-scrollbar">
-                    <nav className="-mb-px flex space-x-8 px-1" aria-label="Tabs">
+                <div className="mb-6 border-b border-slate-200">
+                    <nav className="-mb-px flex lg:space-x-8 lg:px-1 grid grid-cols-4 gap-1" aria-label="Tabs">
                         <button
                             onClick={() => setActiveTab('staff')}
-                            className={`${activeTab === 'staff' ? 'border-green-500 text-green-600' : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'} whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center shrink-0`}
+                            className={`${activeTab === 'staff' ? 'border-green-500 text-green-600' : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'} whitespace-nowrap py-3 px-1 border-b-2 font-medium text-xs lg:text-sm flex flex-col lg:flex-row items-center justify-center lg:justify-start shrink-0`}
                         >
-                            <Users className="w-4 h-4 mr-2" />
+                            <Users className="w-5 h-5 lg:w-4 lg:h-4 mb-1 lg:mb-0 lg:mr-2" />
                             Personal
                         </button>
                         <button
                             onClick={() => setActiveTab('devices')}
-                            className={`${activeTab === 'devices' ? 'border-purple-500 text-purple-600' : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'} whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center shrink-0`}
+                            className={`${activeTab === 'devices' ? 'border-purple-500 text-purple-600' : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'} whitespace-nowrap py-3 px-1 border-b-2 font-medium text-xs lg:text-sm flex flex-col lg:flex-row items-center justify-center lg:justify-start shrink-0`}
                         >
-                            <Monitor className="w-4 h-4 mr-2" />
+                            <Monitor className="w-5 h-5 lg:w-4 lg:h-4 mb-1 lg:mb-0 lg:mr-2" />
                             Inventario
                         </button>
                         <button
                             onClick={() => setActiveTab('events')}
-                            className={`${activeTab === 'events' ? 'border-orange-500 text-orange-600' : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'} whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center shrink-0`}
+                            className={`${activeTab === 'events' ? 'border-orange-500 text-orange-600' : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'} whitespace-nowrap py-3 px-1 border-b-2 font-medium text-xs lg:text-sm flex flex-col lg:flex-row items-center justify-center lg:justify-start shrink-0`}
                         >
-                            <Activity className="w-4 h-4 mr-2" />
-                            Eventos / Logs
+                            <Activity className="w-5 h-5 lg:w-4 lg:h-4 mb-1 lg:mb-0 lg:mr-2" />
+                            <span className="hidden lg:inline">Eventos / Logs</span>
+                            <span className="lg:hidden">Eventos</span>
                         </button>
                         <button
                             onClick={() => setActiveTab('vault')}
-                            className={`${activeTab === 'vault' ? 'border-blue-500 text-blue-600' : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'} whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center shrink-0`}
+                            className={`${activeTab === 'vault' ? 'border-blue-500 text-blue-600' : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'} whitespace-nowrap py-3 px-1 border-b-2 font-medium text-xs lg:text-sm flex flex-col lg:flex-row items-center justify-center lg:justify-start shrink-0`}
                         >
-                            <Shield className="w-4 h-4 mr-2" />
+                            <Shield className="w-5 h-5 lg:w-4 lg:h-4 mb-1 lg:mb-0 lg:mr-2" />
                             Bóveda
                         </button>
                     </nav>
