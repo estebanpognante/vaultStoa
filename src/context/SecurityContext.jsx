@@ -94,8 +94,20 @@ export const SecurityProvider = ({ children }) => {
         }
     };
 
+    // Master Key Management
+    // In a real production app, this should be handled more securely (e.g. user input, KMS).
+    // For this implementation, we use an Environment Variable or a fallback.
+    const [masterKey, setMasterKey] = useState(import.meta.env.VITE_MASTER_KEY || "DEV_MASTER_KEY_FALLBACK_123");
+
+    useEffect(() => {
+        // Optional: Warn if using fallback in specific environments
+        if (!import.meta.env.VITE_MASTER_KEY) {
+            console.warn("Security Warning: Using default DEV_MASTER_KEY. Please set VITE_MASTER_KEY in .env");
+        }
+    }, []);
+
     return (
-        <SecurityContext.Provider value={{ user, isAuthenticated, login, loginWithEmail, registerWithEmail, logout, loading }}>
+        <SecurityContext.Provider value={{ user, isAuthenticated, login, loginWithEmail, registerWithEmail, logout, loading, masterKey }}>
             {!loading && children}
         </SecurityContext.Provider>
     );
