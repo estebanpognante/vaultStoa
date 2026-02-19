@@ -6,7 +6,7 @@ import StaffDetailsModal from './StaffDetailsModal';
 import ConfirmationModal from '../common/ConfirmationModal';
 
 
-const EntityList = ({ companyId, collectionName, onEdit }) => {
+const EntityList = ({ companyId, collectionName, onEdit, searchQuery }) => {
     const [items, setItems] = useState([]);
     const [loading, setLoading] = useState(true);
     const [selectedStaff, setSelectedStaff] = useState(null);
@@ -15,7 +15,11 @@ const EntityList = ({ companyId, collectionName, onEdit }) => {
     const [itemToDelete, setItemToDelete] = useState(null);
 
     useEffect(() => {
-        if (!companyId) return;
+        if (!companyId) {
+            setLoading(false);
+            setItems([]);
+            return;
+        }
 
         setLoading(true);
         // Assuming all managed collections have 'companyId' Reference
@@ -55,12 +59,44 @@ const EntityList = ({ companyId, collectionName, onEdit }) => {
         setItemToDelete(item);
     };
 
+    // Filter Items based on Search Query
+    const filteredItems = items.filter(item => {
+        if (!searchQuery) return true;
+        const q = searchQuery.toLowerCase();
+
+        if (collectionName === 'staff') {
+            return (
+                item.firstName?.toLowerCase().includes(q) ||
+                item.lastName?.toLowerCase().includes(q) ||
+                item.workEmail?.toLowerCase().includes(q) ||
+                item.position?.toLowerCase().includes(q)
+            );
+        }
+        if (collectionName === 'devices') {
+            return (
+                item.deviceName?.toLowerCase().includes(q) ||
+                item.brand?.toLowerCase().includes(q) ||
+                item.model?.toLowerCase().includes(q) ||
+                item.serialNumber?.toLowerCase().includes(q) ||
+                item.ipAddressStatic?.toLowerCase().includes(q)
+            );
+        }
+        if (collectionName === 'events') {
+            return (
+                item.eventType?.toLowerCase().includes(q) ||
+                item.description?.toLowerCase().includes(q) ||
+                item.priority?.toLowerCase().includes(q)
+            );
+        }
+        return true;
+    });
+
     if (loading) return <div className="text-center py-10"><div className="animate-spin h-6 w-6 border-b-2 border-blue-600 rounded-full mx-auto"></div></div>;
 
-    if (items.length === 0) {
+    if (filteredItems.length === 0) {
         return (
             <div className="text-center py-10 bg-white rounded-lg border border-slate-200 border-dashed">
-                <p className="text-slate-500">No hay registros encontrados.</p>
+                <p className="text-slate-500">No se encontraron registros{searchQuery ? ' coincidencias con la búsqueda' : ''}.</p>
             </div>
         );
     }
@@ -79,7 +115,7 @@ const EntityList = ({ companyId, collectionName, onEdit }) => {
                         </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-slate-200">
-                        {items.map((item) => (
+                        {filteredItems.map((item) => (
                             <tr
                                 key={item.id}
                                 className={`transition-colors ${collectionName === 'staff' ? 'hover:bg-blue-50 cursor-pointer' : 'hover:bg-slate-50'}`}
@@ -143,7 +179,7 @@ const EntityList = ({ companyId, collectionName, onEdit }) => {
             {/* Mobile Card View */}
             <div className="md:hidden">
                 <div className="divide-y divide-slate-200">
-                    {items.map((item) => (
+                    {filteredItems.map((item) => (
                         <div
                             key={item.id}
                             className="p-4 active:bg-slate-50 transition-colors"

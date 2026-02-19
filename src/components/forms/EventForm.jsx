@@ -2,8 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { db } from '../../config/firebase';
 import { collection, addDoc, doc, updateDoc, Timestamp, query, where, getDocs } from 'firebase/firestore';
 import { Save, X, AlertTriangle } from 'lucide-react';
+import { useSecurity } from '../../context/SecurityContext';
 
 const EventForm = ({ companyId, initialData, onClose, onSuccess, readOnly = false }) => {
+    const { user } = useSecurity();
     const [formData, setFormData] = useState({
         eventType: 'Maintenance',
         description: '',
@@ -118,6 +120,7 @@ const EventForm = ({ companyId, initialData, onClose, onSuccess, readOnly = fals
                 await updateDoc(doc(db, 'events', initialData.id), payload);
             } else {
                 payload.companyId = doc(db, 'companies', companyId);
+                payload.ownerId = user?.ownerId || null; // RBAC
                 await addDoc(collection(db, 'events'), payload);
             }
 

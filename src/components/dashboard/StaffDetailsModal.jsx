@@ -111,31 +111,31 @@ const StaffDetailsModal = ({ staff, onClose }) => {
                 {/* Header Profile Section */}
                 <div className="bg-slate-50 p-6 border-b border-slate-200 flex justify-between items-start">
                     <div className="flex items-start space-x-4">
-                        <div className="h-16 w-16 bg-white rounded-full flex items-center justify-center shadow-sm border border-slate-200">
+                        <div className="h-16 w-16 bg-white rounded-full flex items-center justify-center shadow-sm border border-slate-200 flex-shrink-0">
                             <User className="h-8 w-8 text-slate-400" />
                         </div>
-                        <div>
-                            <h2 className="text-2xl font-bold text-slate-800">{staff.firstName} {staff.lastName}</h2>
-                            <div className="flex items-center text-slate-500 mt-1 space-x-4 text-sm">
-                                <span className="flex items-center"><Briefcase className="w-4 h-4 mr-1" /> {staff.position}</span>
-                                <span className="flex items-center"><Mail className="w-4 h-4 mr-1" /> {staff.workEmail}</span>
-                                {staff.phone && <span className="flex items-center"><Phone className="w-4 h-4 mr-1" /> {staff.phone}</span>}
+                        <div className="min-w-0 flex-1">
+                            <h2 className="text-2xl font-bold text-slate-800 break-words">{staff.firstName} {staff.lastName}</h2>
+                            <div className="flex flex-col md:flex-row md:items-center text-slate-500 mt-1 md:space-x-4 text-sm space-y-1 md:space-y-0">
+                                <span className="flex items-center whitespace-nowrap"><Briefcase className="w-4 h-4 mr-1 flex-shrink-0" /> {staff.position}</span>
+                                <span className="flex items-center break-all"><Mail className="w-4 h-4 mr-1 flex-shrink-0" /> {staff.workEmail}</span>
+                                {staff.phone && <span className="flex items-center whitespace-nowrap"><Phone className="w-4 h-4 mr-1 flex-shrink-0" /> {staff.phone}</span>}
                             </div>
                             <div className="mt-2">
                                 <StatusBadge status={staff.employmentStatus} />
                             </div>
                         </div>
                     </div>
-                    <button onClick={onClose} className="text-slate-400 hover:text-slate-600 transition-colors p-2 hover:bg-slate-100 rounded-lg">
+                    <button onClick={onClose} className="text-slate-400 hover:text-slate-600 transition-colors p-2 hover:bg-slate-100 rounded-lg flex-shrink-0">
                         <X className="w-6 h-6" />
                     </button>
                 </div>
 
                 {/* Navigation Tabs */}
-                <div className="flex border-b border-slate-200 bg-white px-6">
+                <div className="flex border-b border-slate-200 bg-white px-2 md:px-6 overflow-x-auto no-scrollbar">
                     <button
                         onClick={() => setActiveTab('devices')}
-                        className={`py-4 px-6 text-sm font-medium border-b-2 transition-colors flex items-center ${activeTab === 'devices'
+                        className={`py-4 px-3 md:px-6 text-sm font-medium border-b-2 transition-colors flex items-center whitespace-nowrap ${activeTab === 'devices'
                             ? 'border-blue-500 text-blue-600'
                             : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'
                             }`}
@@ -144,7 +144,7 @@ const StaffDetailsModal = ({ staff, onClose }) => {
                     </button>
                     <button
                         onClick={() => setActiveTab('keys')}
-                        className={`py-4 px-6 text-sm font-medium border-b-2 transition-colors flex items-center ${activeTab === 'keys'
+                        className={`py-4 px-3 md:px-6 text-sm font-medium border-b-2 transition-colors flex items-center whitespace-nowrap ${activeTab === 'keys'
                             ? 'border-blue-500 text-blue-600'
                             : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'
                             }`}
@@ -153,7 +153,7 @@ const StaffDetailsModal = ({ staff, onClose }) => {
                     </button>
                     <button
                         onClick={() => setActiveTab('events')}
-                        className={`py-4 px-6 text-sm font-medium border-b-2 transition-colors flex items-center ${activeTab === 'events'
+                        className={`py-4 px-3 md:px-6 text-sm font-medium border-b-2 transition-colors flex items-center whitespace-nowrap ${activeTab === 'events'
                             ? 'border-orange-500 text-orange-600'
                             : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'
                             }`}

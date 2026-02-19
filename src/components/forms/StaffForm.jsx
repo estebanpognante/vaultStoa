@@ -4,8 +4,10 @@ import { collection, addDoc, doc, updateDoc, Timestamp, query, where, onSnapshot
 import { Save, X, Users, Monitor, Link, Plus, Trash2, ChevronDown, ChevronUp, AlertTriangle } from 'lucide-react';
 import DeviceForm from './DeviceForm';
 import { seedJobPositions } from '../../data/jobPositions';
+import { useSecurity } from '../../context/SecurityContext';
 
 const StaffForm = ({ companyId, initialData, onClose, onSuccess }) => {
+    const { user } = useSecurity();
     const [error, setError] = useState(null);
     const [formData, setFormData] = useState({
         firstName: '',
@@ -168,6 +170,10 @@ const StaffForm = ({ companyId, initialData, onClose, onSuccess }) => {
             if (initialData) {
                 await updateDoc(doc(db, 'staff', initialData.id), payload);
             } else {
+                // IMPORTANT: Add ownerId for RBAC
+                if (user && user.ownerId) {
+                    payload.ownerId = user.ownerId;
+                }
                 const docRef = await addDoc(collection(db, 'staff'), {
                     ...payload,
                     startDate: Timestamp.now()

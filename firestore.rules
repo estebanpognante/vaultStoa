@@ -1,10 +1,82 @@
 service cloud.firestore {
   match /databases/{database}/documents {
-    match /{document=**} {
-      // Allow read/write access if the user is authenticated and their email is in the allowed list
-      allow read, write: if request.auth != null && 
-        (request.auth.token.email == 'estebanpognante@gmail.com' || 
-         request.auth.token.email == 'admin@example.com');
+
+    // --- Helper Functions ---
+
+    // Get the user's profile document
+    function getUser() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+
+    // Check if the user is a SuperAdmin
+    function isSuperAdmin() {
+      return getUser().role == 'superadmin';
+    }
+
+    // Check if the user is an Admin (Tenant Owner)
+    function isAdmin() {
+      return getUser().role == 'admin'; 
+    }
+
+    // Check if the user is a standard User
+    function isUser() {
+      return getUser().role == 'user';
+    }
+
+    // Check if the user is accessing their own data or data delegated to them
+    function hasAccess(resourceData) {
+      let user = getUser();
+      // 1. SuperAdmin (Global access) - implicitly allowed in match rules, but good to have logic here if needed
+      // 2. Owner (Admin/SuperAdmin personal) accessing their own data
+      // 3. User accessing their Admin's data
+      return (user.role == 'superadmin') || 
+             (resourceData.ownerId == request.auth.uid) || 
+             (resourceData.ownerId == user.ownerId);
+    }
+    
+    // Validate that new data has the correct ownerId
+    function isValidNewDoc(newData) {
+       let user = getUser();
+       // If Admin/SuperAdmin, ownerId must be their own UID
+       // If User, ownerId must be their Admin's UID
+       return (user.role == 'superadmin' && newData.ownerId == request.auth.uid) ||
+              (user.role == 'admin' && newData.ownerId == request.auth.uid) ||
+              (user.role == 'user' && newData.ownerId == user.ownerId);
+    }
+
+    // --- Collection Rules ---
+
+    // Users Collection
+    // - SuperAdmin can read/write everyone
+    // - Users can read their own profile
+    // - Admins can read/write users they act as owner for (invited users)
+    match /users/{userId} {
+      allow read: if request.auth != null && (
+        request.auth.uid == userId || 
+        isSuperAdmin() ||
+        (isAdmin() && resource.data.ownerId == request.auth.uid)
+      );
+      allow write: if request.auth != null && (
+        isSuperAdmin() || 
+        (isAdmin() && request.resource.data.ownerId == request.auth.uid) ||
+        // Bootstrap: Allow specific user to create their own profile
+        (request.auth.token.email == 'estebanpognante@gmail.com' && request.auth.uid == userId)
+      );
+    }
+
+    // Generic Rules for Data Collections (Clients, Sales, etc.)
+    // Matches any other collection
+    match /{collection}/{document=**} {
+      allow read: if request.auth != null && (
+        isSuperAdmin() || 
+        resource.data.ownerId == request.auth.uid ||
+        (isUser() && resource.data.ownerId == getUser().ownerId)
+      );
+      
+      allow write: if request.auth != null && (
+        isSuperAdmin() ||
+        (isValidNewDoc(request.resource.data))
+      );
     }
   }
 }

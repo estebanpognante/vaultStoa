@@ -7,7 +7,7 @@ import { collection, addDoc, doc, updateDoc, Timestamp, query, where, onSnapshot
 import { Save, X, Monitor, UserPlus, Info, Check, Key, Trash2, User, Eye, EyeOff } from 'lucide-react'; // Added Eye, EyeOff
 
 const DeviceForm = ({ companyId, initialData, onClose, onSuccess, onAddStaff, readOnly = false }) => {
-    const { masterKey } = useSecurity(); // Get Master Key
+    const { masterKey, user } = useSecurity(); // Get Master Key & User
     const [formData, setFormData] = useState({
         deviceName: '',
         deviceType: 'Notebook',
@@ -144,7 +144,9 @@ const DeviceForm = ({ companyId, initialData, onClose, onSuccess, onAddStaff, re
                 relatedId: deviceId,
                 secondaryRelatedId: acc.assignedUserId || null, // The Physical Person
                 search_vector,
-                companyId: doc(db, 'companies', companyId)
+                search_vector,
+                companyId: doc(db, 'companies', companyId),
+                ownerId: user?.ownerId || null // RBAC
             };
 
             if (match) {
@@ -181,7 +183,8 @@ const DeviceForm = ({ companyId, initialData, onClose, onSuccess, onAddStaff, re
                 const docRef = await addDoc(collection(db, 'devices'), {
                     ...formData,
                     companyId: doc(db, 'companies', companyId),
-                    purchaseDate: Timestamp.now()
+                    purchaseDate: Timestamp.now(),
+                    ownerId: user?.ownerId || null // RBAC
                 });
                 deviceId = docRef.id;
             }

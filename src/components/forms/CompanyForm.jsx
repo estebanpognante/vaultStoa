@@ -2,8 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { db } from '../../config/firebase';
 import { collection, addDoc, doc, updateDoc, Timestamp } from 'firebase/firestore';
 import { Save, X, Building } from 'lucide-react';
+import { useSecurity } from '../../context/SecurityContext';
 
 const CompanyForm = ({ initialData, onClose, onSuccess }) => {
+    const { user } = useSecurity();
     const [formData, setFormData] = useState({
         legalName: '',
         taxId: '',
@@ -34,7 +36,8 @@ const CompanyForm = ({ initialData, onClose, onSuccess }) => {
             } else {
                 await addDoc(collection(db, 'companies'), {
                     ...formData,
-                    contractDate: Timestamp.now()
+                    contractDate: Timestamp.now(),
+                    ownerId: user?.ownerId || null // RBAC
                 });
             }
 

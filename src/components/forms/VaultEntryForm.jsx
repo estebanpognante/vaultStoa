@@ -8,7 +8,7 @@ import { collection, addDoc, doc, updateDoc, query, where, onSnapshot, getDoc, a
 import { Save, X, User, Monitor, Link, ArrowRight, Eye, EyeOff } from 'lucide-react';
 
 const VaultEntryForm = ({ companyId, initialData, onClose, onSuccess, readOnly = false }) => {
-    const { masterKey } = useSecurity();
+    const { masterKey, user } = useSecurity();
     const [formData, setFormData] = useState({
         serviceName: '',
         category: 'SaaS_App',
@@ -178,6 +178,12 @@ const VaultEntryForm = ({ companyId, initialData, onClose, onSuccess, readOnly =
                 payload.securityQuestion = '';
                 payload.securityAnswer = '';
                 payload.twoFactorSecret = '';
+
+                // Add ownerId for RBAC
+                if (user && user.ownerId) {
+                    payload.ownerId = user.ownerId;
+                }
+
                 await addDoc(collection(db, 'vault_entries'), payload);
             } else {
                 // Update
